@@ -1,10 +1,10 @@
 resource "aws_security_group" "main" {
-  name        = "${var.name}-${var.env}-sg"
-  description = "${var.name}-${var.env}-sg"
+  name        = "${var.name}-alb-${var.env}-sg"
+  description = "${var.name}-alb-${var.env}-sg"
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTPPS"
+    description = "HTTP"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -19,12 +19,14 @@ resource "aws_security_group" "main" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
-  tags = merge(var.tags, { Name = "${var.name}-${var.env}-sg" })
+  tags = merge(var.tags, { Name = "${var.name}-alb-${var.env}-sg" })
 }
+resource "aws_lb" "main" {
+  name               = "${var.name}-alb-${var.env}"
+  internal           = var.internal
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.main.id]
+  subnets            = var.subnets
 
-
-variable "name" {}
-variable "env" {}
-variable "vpc_id" {}
-variable "allow_alb_cidr" {}
-variable "tags" {}
+  tags = merge(var.tags, { Name = "${var.name}-alb-${var.env}-lb" })
+}
